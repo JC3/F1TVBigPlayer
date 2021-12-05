@@ -1,14 +1,13 @@
 # Usage
 
-Since I cranked this out in desparation like 5 seconds before the Saudi Arabia start time, it doesn't have any GUI to speak of, so you'll still need the console for now. Also I only tested on Chrome on Windows.
+I only tested on Chrome on Windows. To use (you'll need to install [Tampermonkey](https://www.tampermonkey.net/) for Chrome or [Greasemonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/) for Firefox, first):
 
-1. Install the script.
-2. Go to the F1TV video you want to watch and wait for it to start.
-3. Open the console.
-4. Type `MakeFullWidth()` to make the player take the whole browser window.
-5. Type `MakeDefaultWidth()` to restore it to its default size.
+1. Install the script ([link](https://github.com/JC3/F1TVBigPlayer/raw/main/F1TVBigPlayer.user.js)).
+2. Go to the F1TV video you want to watch, as normal.
+3. At the bottom right of the player there is now a new button that is just the outline of a rectangle.
+4. Press that button to toggle between large and default size.
 
-That's it. Button coming soon. Feel free to report issues on issue page or make PR fixes.
+That's it. Feel free to report issues on issue page or make PR fixes.
 
 ---
 
