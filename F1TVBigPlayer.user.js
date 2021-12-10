@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         F1TV Big Player
 // @namespace    http://tampermonkey.net/
-// @version      1.1.0-rc.1
+// @version      1.1.0-rc.2
 // @description  Make F1TV Player Big
 // @author       Jason C
 // @include      /^https?://f1tv.formula1.com/.*/
@@ -23,26 +23,21 @@
     let adding = false;
     let observer = null;
 
-    function MakeFullWidth () {
-        let player = document.querySelector('.inset-video-item-image-container');
-        player.style.setProperty("position", "fixed", "important");
-        player.style.top = "0";
-        player.style.left = "0";
-        player.style.bottom = "0";
-        player.style.right = "0";
-        player.style.zIndex = 1000;
-        let cntnr = document.body;
-        cntnr.style.overflowY = "hidden";
-        document.getElementById("fbpbutton").onclick = MakeDefaultWidth;
-    }
-
-    function MakeDefaultWidth () {
-        let player = document.querySelector(".inset-video-item-image-container");
-        player.removeAttribute("style");
-        let cntnr = document.body;
-        cntnr.style.overflowY = "auto";
-        document.getElementById("fbpbutton").onclick = MakeFullWidth;
-    }
+    let css = document.createElement("style");
+    css.innerText =
+        "body.fbpmaximized .inset-video-item-image-container {" +
+        "  position: fixed !important;" +
+        "  top: 0;" +
+        "  left: 0;" +
+        "  bottom: 0;" +
+        "  right: 0;" +
+        "  z-index: 1000;" +
+        "}" +
+        "body.fbpmaximized {" +
+        "  overflow-y: hidden;" +
+        "  overflow-x: hidden;" +
+        "}";
+    document.head.appendChild(css);
 
     function AddPlayerButton () {
         if (!document.querySelector("#fbpbutton")) {
@@ -56,9 +51,9 @@
             button.ariaPressed = "false";
             button.tabIndex = "0";
             button.setAttribute("role", "button");
-            button.innerHTML = '<span class="bmpui-label">Maximize</span>';
+            button.innerHTML = '<span class="bmpui-label">Big Mode</span>';
             button.setAttribute("style", `background-image:url("data:image/svg+xml,${encodeURIComponent(ButtonSVG)}")`);
-            button.onclick = MakeFullWidth;
+            button.onclick = () => document.body.classList.toggle("fbpmaximized");
             try {
                 adding = true;
                 sibling.parentNode.appendChild(button);
@@ -80,12 +75,16 @@
             if (!app) { return false; }
             (observer = new MutationObserver(function(muts) {
                 if (!adding) {
+                    let nodesAdded = false, nodesRemoved = false;
                     for (let mut of muts) {
-                        if (mut.addedNodes.length > 0) {
-                            AddPlayerButton();
-                            break;
-                        }
+                        nodesAdded = nodesAdded || mut.addedNodes.length > 0;
+                        nodesRemoved = nodesRemoved || mut.removedNodes.length > 0;
+                        if (nodesAdded && nodesRemoved) { break; }
                     }
+                    if (nodesAdded) {
+                        AddPlayerButton(); }
+                    if (nodesRemoved && !document.querySelector("#fbpbutton")) {
+                        document.body.classList.remove("fbpmaximized"); }
                 }
             })).observe(app, { subtree: true, childList: true });
         }
@@ -93,8 +92,9 @@
     }
 
     window.FBP = {
-        MakeFullWidth: MakeFullWidth,
-        MakeDefaultWidth: MakeDefaultWidth,
+        MakeFullWidth: () => document.body.classList.add("fbpmaximized"),
+        MakeDefaultWidth: () => document.body.classList.remove("fbpmaximized"),
+        ToggleWidth: () => document.body.classList.toggle("fbpmaximized"),
         AddPlayerButton: AddPlayerButton,
         InitPlayerMonitor: InitPlayerMonitor
     }
