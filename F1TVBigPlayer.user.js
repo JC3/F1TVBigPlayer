@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         F1TV Big Player
 // @namespace    http://tampermonkey.net/
-// @version      1.1.0-rc.3
+// @version      1.1.0
 // @description  Make F1TV Player Big
 // @author       Jason C
 // @include      /^https?://f1tv.formula1.com/.*/
