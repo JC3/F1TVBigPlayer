@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         F1TV Big Player
 // @namespace    http://tampermonkey.net/
-// @version      1.1.0
+// @version      1.2.0-rc.1
 // @description  Make F1TV Player Big
 // @author       Jason C
 // @include      /^https?://f1tv.formula1.com/.*/
@@ -38,22 +38,25 @@
         "  overflow-y: hidden;" +
         "  overflow-x: hidden;" +
         "}" +
-        "body.fbpmaximized #fbpbutton {" +
+        "body.fbpmaximized .fbpbutton {" +
         `  background-image:url("data:image/svg+xml,${encodeURIComponent(DefButtonSVG)}");` +
         "}" +
-        "#fbpbutton {" +
+        ".fbpbutton {" +
         `  background-image:url("data:image/svg+xml,${encodeURIComponent(MaxButtonSVG)}");` +
         "}";
     document.head.appendChild(css);
 
-    function AddPlayerButton () {
-        if (!document.querySelector("#fbpbutton")) {
-            let sibling = document.querySelector(".bmpui-ui-fullscreentogglebutton");
-            if (!sibling) { return false; }
+    // there are multiple control bars, need to modify all of them.
+    function AddPlayerButtons () {
+        document.querySelectorAll(".bmpui-ui-fullscreentogglebutton")
+            .forEach((e) => AddPlayerButton(e.parentNode));
+    }
+
+    function AddPlayerButton (controls) {
+        if (!controls.classList.contains("fbpmodified")) {
             let button = document.createElement("button");
-            button.id = "fbpbutton";
             button.type = "button";
-            button.setAttribute("class", "bmpui-ui-button bmpui-off");
+            button.setAttribute("class", "bmpui-ui-button bmpui-off fbpbutton");
             button.ariaLabel = "Maximize";
             button.ariaPressed = "false";
             button.tabIndex = "0";
@@ -62,13 +65,13 @@
             button.onclick = () => document.body.classList.toggle("fbpmaximized");
             try {
                 adding = true;
-                sibling.parentNode.appendChild(button);
+                controls.appendChild(button);
+                controls.classList.add("fbpmodified");
             } finally {
                 adding = false;
             }
-            console.log("F1TVBigPlayer: Added button to player.");
+            console.log("F1TVBigPlayer: Added button to a control bar.");
         }
-        return true;
     }
 
     // button must be added/removed on dom changes rather than on load because
@@ -88,8 +91,8 @@
                         if (nodesAdded && nodesRemoved) { break; }
                     }
                     if (nodesAdded) {
-                        AddPlayerButton(); }
-                    if (nodesRemoved && !document.querySelector("#fbpbutton")) {
+                        AddPlayerButtons(); }
+                    if (nodesRemoved && !document.querySelector(".fbpbutton")) {
                         document.body.classList.remove("fbpmaximized"); }
                 }
             })).observe(app, { subtree: true, childList: true });
@@ -101,7 +104,7 @@
         MakeFullWidth: () => document.body.classList.add("fbpmaximized"),
         MakeDefaultWidth: () => document.body.classList.remove("fbpmaximized"),
         ToggleWidth: () => document.body.classList.toggle("fbpmaximized"),
-        AddPlayerButton: AddPlayerButton,
+        AddPlayerButtons: AddPlayerButtons,
         InitPlayerMonitor: InitPlayerMonitor
     }
 
